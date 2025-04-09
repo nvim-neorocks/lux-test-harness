@@ -1,0 +1,23 @@
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+name: Integration tests
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: cachix/cachix-action@v16
+        with:
+          name: neorocks
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+      - name: Integration tests
+        run: | 
+          nix develop --command "bash check-all.sh"
+        shell: bash
