@@ -1,39 +1,56 @@
 #!/bin/sh
 
-# Initialize counters
 total=0
 success=0
 interrupted=false
+processed=0
 
-# Function to display the success percentage
 display_percentage() {
     if [ $total -gt 0 ]; then
-        percentage=$(bc -l <<< "scale=2; ($success / $total) * 100")
+        percentage=$(bc -l <<< "scale=2; ($success / $processed) * 100")
     else
         percentage=0
     fi
     
     echo "Total rockspecs: $total"
+    echo "Processed rockspecs: $processed"
     echo "Successful installations: $success"
     echo "Success rate: $percentage%"
 }
 
 # Trap to catch SIGINT (Ctrl+C) and set a flag
-trap 'interrupted=true; display_percentage; exit' SIGINT
+trap 'interrupted=true; display_percentage; rm results.txt; exit' SIGINT
 
-# Loop over all .rockspec files in the current directory
-for file in *.rockspec; do
-    if $interrupted; then
-        break
-    fi
-    
-    ((total++))
-    
-    # Attempt to install the rockspec
+install_rockspec() {
+    local file="$1"
     if lx --lua-version 5.1 install-rockspec "$file"; then
-        ((success++))
+        echo "s" >> results.txt
+    else
+        echo "f" >> results.txt
     fi
-done
+}
 
-# Display the success percentage after completing all installations
+export -f install_rockspec
+
+total=$(ls *.rockspec 2>/dev/null | wc -l)
+
+monitor_results() {
+    while [ $processed -lt $total ] && [ "$interrupted" = false ]; do
+        processed=$(cat results.txt 2>/dev/null | wc -l || echo 0)
+        success=$(grep -c "s" results.txt 2>/dev/null || echo 0)
+        
+        display_percentage
+        
+        sleep 10
+    done
+}
+
+monitor_results &
+
+ls *.rockspec | parallel --keep-order install_rockspec {}
+
+wait
+
 display_percentage
+
+rm results.txt
