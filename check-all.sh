@@ -1,18 +1,16 @@
 #!/bin/sh
 
-total=0
+CHUNK_SIZE=300
+
 success=0
 interrupted=false
 processed=0
+chunk_offset=$(($1 * $CHUNK_SIZE))
 
 display_percentage() {
-    if [ $total -gt 0 ]; then
-        percentage=$(bc -l <<< "scale=2; ($success / $processed) * 100")
-    else
-        percentage=0
-    fi
+    percentage=$(bc -l <<< "scale=2; ($success / $processed) * 100")
     
-    echo "Total rockspecs: $total"
+    echo "Total rockspecs: $CHUNK_SIZE"
     echo "Processed rockspecs: $processed"
     echo "Successful installations: $success"
     echo "Success rate: $percentage%"
@@ -32,10 +30,8 @@ install_rockspec() {
 
 export -f install_rockspec
 
-total=$(ls *.rockspec 2>/dev/null | wc -l)
-
 monitor_results() {
-    while [ $processed -lt $total ] && [ "$interrupted" = false ]; do
+    while [ $processed -lt $CHUNK_SIZE ] && [ "$interrupted" = false ]; do
         processed=$(cat results.txt 2>/dev/null | wc -l || echo 0)
         success=$(grep -c "s" results.txt 2>/dev/null || echo 0)
         
@@ -47,7 +43,7 @@ monitor_results() {
 
 monitor_results &
 
-ls *.rockspec | parallel --keep-order install_rockspec {}
+ls *.rockspec | tail -n +$CHUNK_SIZE | head -n $CHUNK_SIZE | parallel -j 4 --keep-order install_rockspec {}
 
 wait
 
