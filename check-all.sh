@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CHUNK_SIZE=300
+CHUNK_SIZE=1000
 
 success=0
 interrupted=false
