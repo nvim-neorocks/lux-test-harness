@@ -17,7 +17,7 @@ display_percentage() {
 }
 
 # Trap to catch SIGINT (Ctrl+C) and set a flag
-trap 'interrupted=true; display_percentage; rm results.txt; exit' SIGINT
+trap 'interrupted=true; rm results.txt; exit' SIGINT
 
 install_rockspec() {
     local file="$1"
@@ -39,14 +39,15 @@ monitor_results() {
         
         sleep 10
     done
+
+    # Display percentage at end of execution
+    display_percentage
 }
 
 monitor_results &
 
-ls *.rockspec | tail -n +$CHUNK_SIZE | head -n $CHUNK_SIZE | parallel -j 4 --keep-order install_rockspec {}
+ls *.rockspec | tail -n +$chunk_offset | head -n $CHUNK_SIZE | parallel -j 4 --keep-order install_rockspec {}
 
 wait
-
-display_percentage
 
 rm results.txt
