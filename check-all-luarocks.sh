@@ -21,10 +21,9 @@ trap 'interrupted=true; rm results.txt; exit' SIGINT
 
 install_rockspec() {
     local file="$1"
-    if lx --lua-version 5.1 install-rockspec "$file"; then
+    if luarocks --lua-version 5.1 --local build "$file"; then
         echo "s" >> results.txt
     else
-        echo "^^^ Failed to install $file ^^^"
         echo "f" >> results.txt
     fi
 }

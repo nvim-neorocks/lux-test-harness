@@ -1,0 +1,25 @@
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+name: Test Harness (luarocks)
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        chunk_id: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: cachix/cachix-action@v16
+        with:
+          name: neorocks
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+      - name: Test Harness (luarocks)
+        run: | 
+          nix develop --command bash check-all-luarocks.sh ${{ matrix.chunk_id }}
+        shell: bash

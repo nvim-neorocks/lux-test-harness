@@ -21,6 +21,10 @@
                 cmake
                 gcc
                 bc
+                tree-sitter
+                coreutils-full
+                gnused
+                luarocks
               ];
             };
         };
