@@ -25,6 +25,7 @@
                 coreutils-full
                 gnused
                 luarocks
+                lua51Packages.lua
               ];
             };
         };
