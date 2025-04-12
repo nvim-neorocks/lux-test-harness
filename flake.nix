@@ -24,7 +24,7 @@
                 tree-sitter
                 coreutils-full
                 gnused
-                luarocks
+                # luarocks
                 lua51Packages.lua
               ];
             };

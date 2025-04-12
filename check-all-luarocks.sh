@@ -21,7 +21,8 @@ trap 'interrupted=true; rm results.txt; exit' SIGINT
 
 install_rockspec() {
     local file="$1"
-    if luarocks --lua-version 5.1 --local build "$file"; then
+
+    if luarocks --lua-version 5.1 --local install $file; then
         echo "s" >> results.txt
     else
         echo "f" >> results.txt
@@ -46,7 +47,9 @@ monitor_results() {
 
 monitor_results &
 
-ls *.rockspec | tail -n +$chunk_offset | head -n $CHUNK_SIZE | parallel -j 4 --keep-order install_rockspec {}
+for file in $(ls *.rockspec | tail -n +$chunk_offset | head -n $CHUNK_SIZE); do
+    install_rockspec "$file"
+done
 
 wait
 

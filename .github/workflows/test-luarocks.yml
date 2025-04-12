@@ -19,7 +19,8 @@ jobs:
         with:
           name: neorocks
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+      - run: sudo apt install luarocks
       - name: Test Harness (luarocks)
         run: | 
-          nix develop --command bash check-all-luarocks.sh ${{ matrix.chunk_id }}
+          nix develop --impure --command bash check-all-luarocks.sh ${{ matrix.chunk_id }}
         shell: bash
